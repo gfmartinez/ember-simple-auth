@@ -5,7 +5,7 @@ import Evented from '@ember/object/evented';
 import { merge, assign as emberAssign } from '@ember/polyfills';
 import { set } from '@ember/object';
 import { debug, assert } from '@ember/debug';
-import { getOwner } from '@ember/application';
+import { getOwner, setOwner } from '@ember/application';
 const assign = emberAssign || merge;
 
 export default ObjectProxy.extend(Evented, {
@@ -47,6 +47,7 @@ export default ObjectProxy.extend(Evented, {
     }
 
     let authenticator = this._lookupAuthenticator(this.authenticator);
+    
     return authenticator.invalidate(this.content.authenticated, ...arguments).then(() => {
       authenticator.off('sessionDataUpdated', this, this._onSessionDataUpdated);
       this._busy = false;
@@ -192,7 +193,10 @@ export default ObjectProxy.extend(Evented, {
     });
   },
 
-  _lookupAuthenticator(authenticator) {
-    return getOwner(this).lookup(authenticator);
+  _lookupAuthenticator(authenticatorName) {
+    let owner = getOwner(this);
+    let authenticator = getOwner(this).lookup(authenticatorName);
+    setOwner(authenticator, owner);
+    return authenticator;
   }
 });
