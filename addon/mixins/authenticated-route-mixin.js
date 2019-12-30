@@ -61,11 +61,6 @@ export default Mixin.create({
   */
   session: service('session'),
 
-  _authRouter: computed(function() {
-    let owner = getOwner(this);
-    return owner.lookup('service:router') || owner.lookup('router:main');
-  }),
-
   /**
     The route to transition to for authentication. The
     {{#crossLink "AuthenticatedRouteMixin"}}{{/crossLink}} will transition to
@@ -123,6 +118,8 @@ export default Mixin.create({
     let authenticationRoute = this.get('authenticationRoute');
     assert('The route configured as AuthenticatedRouteMixin.authenticationRoute cannot implement the AuthenticatedRouteMixin mixin as that leads to an infinite transitioning loop!', this.get('routeName') !== authenticationRoute);
 
-    this.get('_authRouter').transitionTo(authenticationRoute);
+    let owner = getOwner(this);
+    let authRouter = owner.lookup('service:router') || owner.lookup('router:main');
+    authRouter.transitionTo(authenticationRoute);
   },
 });
